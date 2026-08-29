@@ -22,8 +22,8 @@ It provides a higher-level interface over low-level native operations, including
 
 ## Dependencies
 
-* **LuIbexWin** — provides the Windows and native integration layer used by WPToolkit.
-* **Lua-ARchive** — provides the runtime environment and module system used to package and run WPToolkit applications as `.lar` files.
+* [LuIbexWin](https://github.com/anatinesquire40/LuIbexWin) — provides the Windows and native integration layer used by WPToolkit.
+* [Lua-ARchive](https://github.com/anatinesquire40/Lua-ARchive) — provides the runtime environment and module system used to package and run WPToolkit applications as `.lar` files.
 
 WPToolkit is designed to run on the **Lua-ARchive** runtime and use **LuIbexWin** for Windows-specific functionality.
 
