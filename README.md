@@ -20,6 +20,13 @@ It provides a higher-level interface over low-level native operations, including
 * Timers
 * Loaded DLL inspection
 
+## Building
+
+```bash
+git clone https://github.com/anatinesquire40/WPToolkit.git
+lar --build WPToolkit -o WPToolkit.lar
+```
+
 ## Dependencies
 
 * [LuIbexWin](https://github.com/anatinesquire40/LuIbexWin) — provides the Windows and native integration layer used by WPToolkit.
