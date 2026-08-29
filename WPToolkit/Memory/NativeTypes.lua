@@ -1,0 +1,15 @@
+ValueTypes = {
+    VT_INTEGER = 0,
+    VT_BOOLEAN = 1,
+    VT_DOUBLE = 2,
+    VT_FLOAT = 3,
+    VT_USERDATA = 4,
+    VT_STRING = 5,
+    VT_NIL = 6,
+    VT_ARRAY = 7,
+    VT_FUNCTION = 8,
+    VT_INTEGER8 = 100,
+    VT_INTEGER16 = 101,
+    VT_INTEGER32 = 102,
+    VT_INTEGER64 = 0,
+}
