@@ -24,7 +24,8 @@ It provides a higher-level interface over low-level native operations, including
 
 ```bash
 git clone https://github.com/anatinesquire40/WPToolkit.git
-lar --build WPToolkit -o WPToolkit.lar
+cd WPToolkit
+lar --build . -o WPToolkit.lar
 ```
 
 ## Dependencies
@@ -282,11 +283,6 @@ WPToolkit
 ## Requirements
 
 WPToolkit is intended for **64-bit Windows** and uses native Windows functionality.
-
-Required components:
-
-* **LuIbexWin**
-* **Lua-ARchive runtime**
 
 WPToolkit is designed to operate within the Lua-ARchive ecosystem and can be packaged as a `.lar` application.
 
