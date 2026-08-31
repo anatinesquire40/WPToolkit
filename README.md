@@ -38,7 +38,7 @@ WPToolkit is designed to run on the **Lua-ARchive** runtime and use **LuIbexWin*
 ## Basic Usage
 
 ```lua
-local wp = Toolkit
+local wp = require("WPToolkit")
 
 local Mem = wp.Memory
 local StructManager = wp.StructManager
