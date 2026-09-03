@@ -14,12 +14,7 @@ function NativeFunctionManager:AlignStack(stack)
 
     return stack - oldstack
 end
-local function hostfunction(addr, ...)
-    Memory.VirtualWin:VirtualFree(addr)
-    return ...
-end
-
-function NativeFunctionManager:CallStack(...)
+function NativeFunctionManager:GetCallStackFunc(...)
     local args = table.pack(...)
     local lua_pushlightuserdata = LuaInfo.neededLAPIFuncs.lua_pushlightuserdata
     local lua_callk             = LuaInfo.neededLAPIFuncs.lua_callk
@@ -59,12 +54,14 @@ end
 lines:addLine(asm.mov(op.reg("rcx"), op.reg("rbp")))
 lines:addLine(asm.mov(op.reg("rax"), op.imm(lua_gettop, 64)))
 lines:generateCallRaxASM()
-
+lines:addLine(asm.sub(
+    op.reg("rax"),
+    op.imm(1, 8)
+))
 lines:addLine(asm.mov(
     op.reg("rbx"),
     op.reg("rax")
 ))
-
 ------------------------------------------------------------------------
 -- Push every allocated stack block as lightuserdata
 ------------------------------------------------------------------------
@@ -142,6 +139,7 @@ local addr = Memory.VirtualWin:VirtualAlloc(len, 0x4)
 Memory:WriteString(addr, code, len)
 Memory.VirtualWin:VirtualProtect(addr, len, 0x20)
 local func = self:pushNativeCFunction(addr)
-return hostfunction(addr, func(args[#args]))
-
+return function()
+    return func(args[#args])
+end, addr
 end

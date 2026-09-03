@@ -62,10 +62,10 @@ modulereq"Mod.LoadedDlls"
 modulereq"FileSystem.PathManager"
 modulereq"FileSystem.FileManager"
 modulereq"FileSystem.KnownPaths"
-modulereq"timer.luatimer"
+LuaInfo:UpdateLuaAPIAddrs()
 modulereq"Mod.library"
 modulereq"Strings.clipboard"
-LuaInfo:UpdateLuaAPIAddrs()
+modulereq"timer.luatimer"
 local M = setmetatable({
     WinAPI = wapi:GetWinAPI()
 }, {__index = function (_,i)
