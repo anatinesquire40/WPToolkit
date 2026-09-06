@@ -101,8 +101,7 @@ local writers = {
         Memory:WriteString(addr, value, d.size)
     end,
     [ValueTypes.VT_USERDATA] = function(addr, d, value)
-        local wr = readers[ValueTypes.VT_USERDATA](addr)
-        Memory:WriteAddr(wr, value, d.size)
+        Memory:WriteUserdata(addr, value)
     end
 }
 

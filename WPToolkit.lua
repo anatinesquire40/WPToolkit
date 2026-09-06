@@ -1,7 +1,10 @@
 assert(os.getenv"OS" == "Windows_NT", "This is only supported on windows")
 local wapi = require("WPToolkit.Mod.WApiMgr")
 local MultiLar = require"MultiLar"
-local manifest = MultiLar:getMain():getManifest()
+local manifest = nil
+if MultiLar.getMain then
+    manifest = MultiLar:getMain():getManifest()
+end
 wapi:LoadWinAPI()
 local _ENV = wapi:MkEnv()
 local LUA_SEARCHER_IDX = 2
@@ -25,7 +28,7 @@ local function modulereq(mod)
     local ret
     local searchers = package.searchers
     local searcherf = searchers[#searchers]
-    if manifest.disableExternalLua then
+    if manifest and manifest.disableExternalLua then
         searcherf = searchers[LUA_SEARCHER_IDX]
     end
     if searcherf then

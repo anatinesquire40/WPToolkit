@@ -15,8 +15,7 @@ StructManager:addFormat("LuaTimer::AsyncTimer", {
     interval = { type = ValueTypes.VT_INTEGER, size = 8, offset = 0x8 },
     next_deadline = { type = ValueTypes.VT_INTEGER, size = 8, offset = 0x10 },
     count = { type = ValueTypes.VT_INTEGER, size = 4, offset = 0x18 },
-    repeat_count = { type = ValueTypes.VT_INTEGER, size = 4, offset = 0x1C },
-    callback = { type = ValueTypes.VT_INTEGER, size = 8, offset = 0x20 },
+    repeat_count = { type = ValueTypes.VT_INTEGER, size = 4, offset = 0x1C }
 })
 local timers = {}
 local callbacks = {}
@@ -30,44 +29,60 @@ end
 function LuaTimer.cancelTimer(timerId)
     if timers[timerId] then
         timers[timerId] = nil
+        callbacks[timerId] = nil
     end
 end
 function LuaTimer.getTimer(timerId)
-       return timers[timerId]    
+    return timers[timerId]
 end
-local function asyncThreadTimer(timerId)
-    local asyncTimer = LuaTimer.getTimer(timerId)
-    if asyncTimer then
-        for _ = 1, asyncTimer.repeat_count > 0 and asyncTimer.repeat_count or math.huge do
-            if not timers[timerId] then
-                break
+local function asyncThreadTimer(rtimerId)
+    local timerId = Memory:ResolvePointer(rtimerId)
+    local co = coroutine.create(function()
+        local asyncTimer = LuaTimer.getTimer(timerId)
+        if asyncTimer then
+            for _ = 1, asyncTimer.repeat_count > 0
+                and asyncTimer.repeat_count
+                or math.huge do
+                if asyncTimer.repeat_count > 0
+                    and asyncTimer.count >= asyncTimer.repeat_count then
+                    LuaTimer.cancelTimer(timerId)
+                    break
+                end
+                if not timers[timerId] then
+                    break
+                end
+                asyncTimer.next_deadline =
+                    asyncTimer.next_deadline + asyncTimer.interval
+                LuaTimer.SleepUntil(asyncTimer.next_deadline)
+                asyncTimer.count = asyncTimer.count + 1
+                local callback = callbacks[timerId]
+                if callback then
+                    callback(asyncTimer.count)
+                end
+                coroutine.yield()
             end
-            asyncTimer.next_deadline = asyncTimer.next_deadline + asyncTimer.interval
-            LuaTimer.SleepUntil(asyncTimer.next_deadline)
-            asyncTimer.count = asyncTimer.count + 1
-            local callback = callbacks[asyncTimer.callback]
-            if callback then
-                callback(asyncTimer.count)
-            end
-            if asyncTimer.repeat_count > 0 and asyncTimer.count >= asyncTimer.repeat_count then
-                LuaTimer.cancelTimer(timerId)
-                break
-            end
+        end
+    end)
+    while coroutine.status(co) ~= "dead" do
+        local ok, err = coroutine.resume(co)
+
+        if not ok then
+            error(err)
         end
     end
     return 0
 end
 function LuaTimer.scheduleTimer(callback, delay_ms, repeatCount)
     repeatCount = repeatCount or 0
-    local AsyncTimer, timerId = StructManager:new("LuaTimer::AsyncTimer")
-    table.insert(callbacks, callback)
-    AsyncTimer.callback = #callbacks
+    local AsyncTimer = StructManager:new("LuaTimer::AsyncTimer")
+    local timerId = #timers+1
+    callbacks[timerId] = callback
     AsyncTimer.interval = delay_ms
     AsyncTimer.count = 0
     AsyncTimer.repeat_count = repeatCount
     AsyncTimer.next_deadline = LuaTimer.getTimeMs()
     timers[timerId] = AsyncTimer
-    AsyncTimer.thread = win.CreateThread(nil, 0, asyncThreadTimer, timerId, 0, nil)
+    AsyncTimer.thread = win.CreateThread(Memory.nullptr, 0, asyncThreadTimer, Memory:ResolvePointer(timerId), Memory.nullptr, 0, Memory.nullptr)
     return timerId
 end
 function LuaTimer.scheduleSyncTimer(callback, delay_ms, repeatCount)
@@ -75,13 +90,13 @@ function LuaTimer.scheduleSyncTimer(callback, delay_ms, repeatCount)
     local count = 0
     local next = LuaTimer.getTimeMs()
     for _ = 1, repeatCount > 0 and repeatCount or math.huge do
+        if repeatCount > 0 and count >= repeatCount then
+            break
+        end
         next = next + delay_ms
         LuaTimer.SleepUntil(next)
         count = count + 1
         callback(count)
-        if repeatCount > 0 and count >= repeatCount then
-            break
-        end
     end
 end
 function LuaTimer.cancelAllTimers()
